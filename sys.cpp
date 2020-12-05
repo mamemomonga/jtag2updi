@@ -67,22 +67,111 @@ void SYS::init(void) {
   #if defined(DEBUG_ON)
   DBG::debug(0x18,0xC0,0xFF, 0xEE);
   #endif
-  #if defined(USE_HV_PROGRAMMING)
+
   #if defined(__AVR_ATmega328P__)
+  // all programming
+  PORTD |= 0b00111100; // pullup Arduino pins D2-5
+  // standard programming only
+  #if not defined (USE_HV_PROGRAMMING)
+  PORTB |= 0b00011111; // pullup Arduino pins D8-12
+  PORTC |= 0b00111111; // pullup Arduino pins A0-5
+  #else // hv programming only
   // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
-  DDRB |=   0b00011111;      // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
-  PORTB &= ~0b00011110;      // clear HVPWR4, HVSD3, HVCP2, HVCP1
-  PORTB |=  0b00001000;      // set HVSD3
+  DDRB |=   0b00011111; // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
+  PORTB &= ~0b00011110; // clear HVPWR4, HVSD3, HVCP2, HVCP1
+  PORTB |=  0b00001000; // set HVSD3
+  #endif
 
   #elif defined(__AVR_ATtiny_Zero_One__)
+  // all programming
+  #if defined(__AVR_ATtinyxy6__) || defined(__AVR_ATtinyxy7__)
+  PORTB.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN0CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN1CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
+  #elif defined(__AVR_ATtinyxy7__)
+  PORTB.PIN6CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN7CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN5CTRL = PORT_PULLUPEN_bm;
+  #endif
+  // standard programming only
+  #if not defined (USE_HV_PROGRAMMING)
+  PORTA.PIN1CTRL = PORT_PULLUPEN_bm;
+  PORTA.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTA.PIN3CTRL = PORT_PULLUPEN_bm;
+  PORTA.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTA.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN1CTRL = PORT_PULLUPEN_bm;
+  #else // hv programming only
   // Output Pins
   PORTA.DIRSET = PIN2_bm | cpp | PIN6_bm | PIN7_bm; // Power Switch, ChargePumpPower-HVenable, LED2-HVLED, LED
   PORTA.OUTSET = PIN2_bm;   // enable power switch
   PORTA.DIRSET = cp1 | cp2; // set charge pump clock1 and clock2 as output
   PORTB.DIRSET = cps;       // set charge pump shutdown pin as output
   PORTB.OUTSET = cps;       // enable charge pump shutdown
-
+  #endif
+  
   #elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+  // all programming (28 pins or more)
+  PORTA.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTA.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTF.PIN0CTRL = PORT_PULLUPEN_bm;
+  PORTF.PIN1CTRL = PORT_PULLUPEN_bm;
+  #if defined(__AVR_32PIN__) || defined(__AVR_48PIN__) || defined(__AVR_64PIN__)
+  PORTF.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTF.PIN3CTRL = PORT_PULLUPEN_bm;
+  PORTF.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTF.PIN5CTRL = PORT_PULLUPEN_bm;
+  #elif defined(__AVR_48PIN__) || defined(__AVR_64PIN__)
+  PORTB.PIN0CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN1CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN3CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN6CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN7CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN0CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN1CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN3CTRL = PORT_PULLUPEN_bm;
+  #elif defined(__AVR_64PIN__)
+  PORTB.PIN6CTRL = PORT_PULLUPEN_bm;
+  PORTB.PIN7CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN6CTRL = PORT_PULLUPEN_bm;
+  PORTE.PIN7CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN0CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN1CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN3CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN6CTRL = PORT_PULLUPEN_bm;
+  PORTG.PIN7CTRL = PORT_PULLUPEN_bm;
+  #endif
+  // standard programming only
+  #if not defined (USE_HV_PROGRAMMING)
+  PORTA.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN0CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN1CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTC.PIN3CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN0CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN1CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN2CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN3CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN4CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN5CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN6CTRL = PORT_PULLUPEN_bm;
+  PORTD.PIN7CTRL = PORT_PULLUPEN_bm;
+  #else // hv programming only
   // Output Pins
   PORTA.DIRSET = PIN2_bm | PIN6_bm | PIN7_bm; // Power Switch, LED2-HVLED, LED
   PORTA.OUTSET = PIN2_bm;   // enable power switch
@@ -91,7 +180,7 @@ void SYS::init(void) {
   PORTD.DIRSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // set target power port as output
   PORTD.OUTSET = PIN0_bm | PIN1_bm | PIN2_bm | PIN3_bm | PIN4_bm | PIN5_bm; // turn on target power
   #endif
-  #endif
+ #endif
 }
 
 void SYS::setLED(void){
@@ -320,7 +409,7 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     while (ADCSRA &  (1 << ADSC));                   // wait while busy
     sum += ADCH;                                     // totalize ADC result
   }
-#elif defined(__AVR_ATmega_Zero__ ) || defined(__AVR_DA__)
+#elif defined(__AVR_ATmega_Zero__)
   PORTD_PIN6CTRL = 0x04;                             // disable digital input buffer on PD6
   ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
   ADC0_CTRLC = 0x54;                                 // reduced capacitance, Vdd ref, prescaler of 32
@@ -333,7 +422,7 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     sum += ADC0_RESL;                                // totalize ADC result
   }
 # endif
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__)
   if ((sum / 250) <= 230) {                          // if voltage on shorted A0-A5 outputs <= 4.5V
     while (1) {                                      // OVERLOAD (fix circuit then press Reset)
       clearPOWER();                                  // turn off target power then flash LED at 4Hz
@@ -365,7 +454,7 @@ uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mod
   ADC0_COMMAND |= ADC_STCONV_bm;                     // start a conversion
   while (ADC0_COMMAND & ADC_STCONV_bm);              // wait while busy
   return ADC0_RESL;                                  // return HV mode jumper setting
-#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__) 
+#elif defined(__AVR_ATmega_Zero__) 
   PORTD_PIN7CTRL = 0x04;                             // disable digital input buffer for PD7
   ADC0_CTRLA = ADC_RESSEL_8BIT_gc;                   // 8-bit resolution
   ADC0_CTRLC = 0x54;                                 // reduced capacitance, Vdd ref, prescaler of 32
@@ -374,6 +463,8 @@ uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mod
   ADC0_COMMAND |= ADC_STCONV_bm;                     // start a conversion
   while (ADC0_COMMAND & ADC_STCONV_bm);              // wait while busy
   return ADC0_RESL;                                  // return HV mode jumper setting
+#elif defined(__AVR_DA__)
+  return 0; //todo
 #else
   return 0;
 # endif

@@ -103,7 +103,7 @@
       #define SSPIN 4
     #endif
 
-  #endif //emd of SPIDEBUG section for XTINY
+  #endif //end of SPIDEBUG section for XTINY
 
   #ifdef USE_USARTDEBUG
     #error "Only has one USART!"
@@ -207,7 +207,7 @@
       #define SSPIN 7
     #endif
 
-  #endif //emd of SPIDEBUG
+  #endif //end of SPIDEBUG
   #ifdef USE_USARTDEBUG
     #define DEBUG_TX_PIN 0
     #define DEBUG_RX_PIN 1
@@ -228,6 +228,8 @@
       #define DEBUG_TX_PORT C
     #endif
   #endif //end if USARTDEBUG
+  #elif defined (__AVR_DA__)
+  // todo
 #else
   #warning "Part not supported - if you didn't provide all the needed pin definitions, that's why it's not compiling"
 #endif //End of the defaults!

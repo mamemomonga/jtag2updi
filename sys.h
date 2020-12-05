@@ -74,11 +74,13 @@
   #define LED2_PORT A
   #define LED2_PIN 6
 
+  #if defined(USE_HV_PROGRAMMING)
   // Dickson charge pump pins
   # define cpp PIN3_bm // charge pump power or HV Enable, PA3
   # define cp1 PIN4_bm // charge pump clock 1, PA4
   # define cp2 PIN5_bm // charge pump clock 2, PA5
   # define cps PIN1_bm // charge pump shutdown, PB1
+  #endif
 
   //USARTDEBUG not practical here because only one UART.
   //#define USE_SPIDEBUG
@@ -100,17 +102,13 @@
   // #define DEBUG_BAUDVAL 0
 
 
-
-
 #elif defined (__AVR_ATmega_Mini__) || defined(ARDUINO_AVR_LARDU_328E)
   // For ATmega8/88/168/328 (P, PB) parts
   // Same deal as before/ Remember that the buildin LED is on the same pin as SCK on most boards, so you'll want to cadd LEDs on other pinn, defaults to D2
   // On PB parts can also use second USART. Using the second SPI is not supported.
 
-
   //#define USE_SPIDEBUG
   //#define SPIPRESC (0x05)
-
 
 
 #elif defined (__AVR_ATmega_Mega__)
@@ -136,11 +134,13 @@
   # define LED2_PORT A
   # define LED2_PIN 6
 
+  #if defined(USE_HV_PROGRAMMING)
   // Dickson charge pump pins
   # define cpp PIN0_bm // charge pump power or HV Enable, PC0
   # define cp1 PIN1_bm // charge pump clock 1, PC1
   # define cp2 PIN2_bm // charge pump clock 2, PC2
   # define cps PIN3_bm // charge pump shutdown, PC3
+  #endif
 
 #endif
 
