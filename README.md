@@ -15,7 +15,7 @@ There are the following known issues:
 * Timeout system breaks compatibility with terminal mode (-t option), by definition, as a user in terminal mode will inevitably take longer than it is configured to wait. This will be corrected via a planned SUPPORT_TERMINAL_MODE option for those small number of users who use terminal mode.
 * Does not work correctly on LGT-based clones
 * has_pdi does not work correctly (waiting to hear back whether it is broken for all parts or just DA-series parts)
-* Does not run on all DA-series parts - This will be corrected by addition of a few more defines, should be easy
+* Does not run on some DA-series parts - This will be corrected by addition of a few more defines, should be easy
 * Does not support targets operating at a low voltage - this could be solved by using an analog comparator for receiving, and using pin in "open drain" mode for transmitting, but I doubt I'll ever bother to implement this.
 
 # HV UPDI Programmers
