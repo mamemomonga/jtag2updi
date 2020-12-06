@@ -421,9 +421,23 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
     while (ADC0_COMMAND & ADC_STCONV_bm);            // wait while busy
     sum += ADC0_RESL;                                // totalize ADC result
   }
+#elif defined(__AVR_DA__)
+  PORTD.PIN6CTRL |= PORT_ISC_INPUT_DISABLE_gc;       // disable digital input buffer for PD6
+  PORTD.PIN6CTRL &= ~PORT_PULLUPEN_bm;               // disable pull-up resistor for PD6
+  ADC0.MUXPOS = ADC_MUXPOS_AIN6_gc;                  // Select ADC channel AIN6 (PD6)
+  ADC0.CTRLC = ADC_PRESC_DIV32_gc;                   // CLK_PER divided by 32
+  VREF.ADC0REF = VREF_REFSEL_VDD_gc;                 // VDD as reference
+  uint16_t sum = 0;
+  for (int i = 0 ; i < 63 ; i++) {                   // totalize 50 10-bit readings
+  ADC0.CTRLA = ADC_ENABLE_bm                         /* ADC Enable: enabled */
+  | ADC_RESSEL_10BIT_gc;                             /* 10-bit mode */  
+  ADC0.COMMAND = ADC_STCONV_bm;                      // start a conversion  
+  while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));          // wait while busy
+  sum += ADC0_RES;                                   // totalize ADC result
+  }
 # endif
-#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__)
-  if ((sum / 250) <= 230) {                          // if voltage on shorted A0-A5 outputs <= 4.5V
+#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+  if ((sum / 250) <= 230) {                          // if voltage on bridged port outputs <= 4.5V
     while (1) {                                      // OVERLOAD (fix circuit then press Reset)
       clearPOWER();                                  // turn off target power then flash LED at 4Hz
       setLED();
@@ -464,7 +478,16 @@ uint8_t SYS::checkHVMODE() {                         // Check HV Programming Mod
   while (ADC0_COMMAND & ADC_STCONV_bm);              // wait while busy
   return ADC0_RESL;                                  // return HV mode jumper setting
 #elif defined(__AVR_DA__)
-  return 0; //todo
+  PORTD.PIN7CTRL |= PORT_ISC_INPUT_DISABLE_gc;       // disable digital input buffer for PD7
+  PORTD.PIN7CTRL &= ~PORT_PULLUPEN_bm;               // disable pull-up resistor for PD7
+  ADC0.MUXPOS = ADC_MUXPOS_AIN7_gc;                  // Select ADC channel AIN7 (PD7)
+  ADC0.CTRLC = ADC_PRESC_DIV32_gc;                   // CLK_PER divided by 32
+  VREF.ADC0REF = VREF_REFSEL_VDD_gc;                 // VDD as reference
+  ADC0.CTRLA = ADC_ENABLE_bm                         /* ADC Enable: enabled */
+  | ADC_RESSEL_10BIT_gc;                             /* 10-bit mode */  
+  ADC0.COMMAND = ADC_STCONV_bm;                      // start a conversion  
+  while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));          // wait while busy
+  return ADC0.RES >> 2;                              // return HV mode jumper setting
 #else
   return 0;
 # endif
