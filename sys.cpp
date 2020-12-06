@@ -428,7 +428,7 @@ void SYS::checkOVERLOAD(void) {                      // Use A6 to sense overload
   ADC0.CTRLC = ADC_PRESC_DIV32_gc;                   // CLK_PER divided by 32
   VREF.ADC0REF = VREF_REFSEL_VDD_gc;                 // VDD as reference
   uint16_t sum = 0;
-  for (int i = 0 ; i < 63 ; i++) {                   // totalize 50 10-bit readings
+  for (int i = 0 ; i < 63 ; i++) {                   // totalize 63 10-bit readings
   ADC0.CTRLA = ADC_ENABLE_bm                         /* ADC Enable: enabled */
   | ADC_RESSEL_10BIT_gc;                             /* 10-bit mode */  
   ADC0.COMMAND = ADC_STCONV_bm;                      // start a conversion  
