@@ -33,7 +33,26 @@ Defaults: SpenceKonde jtag2updi: HV UPDI tool is disabled, Dlloydev jtag2updi: H
 
 ### [Wiki ...](https://github.com/Dlloydev/jtag2updi/wiki)
 
-For more designs, here's a great collection of AVR Programmers and Accessories:  [AVR-Programmer](https://github.com/wagiminator/AVR-Programmer)             
+For more designs, here's a great collection of AVR Programmers and Accessories:  [AVR-Programmer](https://github.com/wagiminator/AVR-Programmer) 
+
+## Change Log
+
+#### Version 1.0.0
+
+- Initial Version
+
+- Added MIT license text file (Jan/22/2021)
+
+- Includes Eltangas minor fixes (Jan/20/2021) 
+
+  ```
+  - Typos
+  - Redundant fossil copy/paste code removed
+  - Compilation warning fixed
+  ```
+
+- Unused pins are pulled up (Dec/5/2020)
+- Add define for HV UPDI programming (Dec/1/2020)       
 
 ------
 

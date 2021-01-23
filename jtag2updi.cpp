@@ -44,7 +44,6 @@ namespace {
 
   }
 
-
   inline void loop() {
     #if (defined(USE_HV_PROGRAMMING) && (defined(__AVR_ATmega328P__) || defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)))
     SYS::setPOWER();
@@ -194,5 +193,4 @@ namespace {
       }
     #endif
   }
-
 }
