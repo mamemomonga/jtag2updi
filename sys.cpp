@@ -82,6 +82,19 @@ void SYS::init(void) {
 	PORTB |=  0b00001000; // set HVSD3
 	#endif
 
+  #elif defined(__AVR_ATmega_Mega__)
+  // all programming
+  // for working with spare pins common to HV and standard programmers
+  // standard programming only
+  #if not defined (USE_HV_PROGRAMMING)
+  // for working with spare pins on standard programmers that are only used for HV type
+  #else // hv programming only
+  // Dickson charge pump - Bit 4,3,2,1,0: HVPWR4 Power, HVSD3 Shutdown, HVCP2 Clock, HVCP1 Clock, HVLED
+  DDRK |=   0b00011111; // configure HVPWR4, HVSD3, HVCP2, HVCP1, HVLED as outputs
+  PORTK &= ~0b00011110; // clear HVPWR4, HVSD3, HVCP2, HVCP1
+  PORTK |=  0b00001000; // set HVSD3
+  #endif
+
 	#elif defined(__AVR_ATtiny_Zero_One__)
 	// all programming
 	#if defined(__AVR_ATtinyxy6__) || defined(__AVR_ATtinyxy7__)
@@ -365,8 +378,13 @@ void SYS::updiEnable(void) {
 void SYS::setPOWER(void) {
 	#if defined(USE_HV_PROGRAMMING)
 	#if defined(__AVR_ATmega328P__)
-	DDRC |= 0b00111111;     // enable pullups
-	PORTC |= 0b00111111;    // set as outputs
+	DDRC |= 0b00111111;     // enable pullups (VTG)
+	PORTC |= 0b00111111;    // set as outputs (VTG)
+  #elif defined(__AVR_ATmega_Mega__)
+  DDRF |= 0b00111111;     // enable pullups (VTG)
+  PORTF |= 0b00111111;    // set as outputs (VTG)
+  DDRB |= 0b01000000;     // enable pullup (power switch)
+  PORTB |= 0b01000000;    // set as output (power switch)
 	#elif defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
 	PORTA.OUTSET = PIN2_bm; // power switch high
 	#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
@@ -379,8 +397,13 @@ void SYS::setPOWER(void) {
 void SYS::clearPOWER(void) {
 	#if defined(USE_HV_PROGRAMMING)
 	#if defined(__AVR_ATmega328P__)
-	DDRC &= 0b11000000;     // disable pullups
-	PORTC &= 0b11000000;    // set as inputs
+	DDRC &= 0b11000000;     // disable pullups (VTG)
+	PORTC &= 0b11000000;    // set as inputs (VTG)
+  #elif defined(__AVR_ATmega_Mega__)
+  DDRF &= 0b11000000;     // disable pullups (VTG)
+  PORTF &= 0b11000000;    // set as inputs (VTG)
+  DDRB &= 0b10111111;     // disable pullup (power switch)
+  PORTB &= 0b10111111;    // set as input (power switch)
 	#elif defined(__AVR_ATtiny_Zero_One__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
 	PORTA.OUTCLR = PIN2_bm; // power switch low
 	#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
@@ -397,17 +420,17 @@ void SYS::cyclePOWER(void) {
 	#endif
 }
 
-void SYS::checkOVERLOAD(void) {                   // Use A6 to sense overload on A0-A5 (target power)
+void SYS::checkOVERLOAD(void) {                 // Sense overload on target power port
 	#if defined(USE_HV_PROGRAMMING)
-	#if defined(__AVR_ATmega328P__)               // Arduino Nano
+	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Mega__)
 	ADCSRA = (1 << ADEN);                         // turn ADC on
 	ADCSRA |= (1 << ADPS0) | (1 << ADPS2);        // prescaler of 32
 	ADMUX = (1 << REFS0) | (1 << ADLAR) | (6 & 0x07); // AVcc reference, 8-bit result, select A6
 	uint16_t sum = 0;
 	for (int i = 0 ; i < 250 ; i++) {             // totalize 250 8-bit readings
-		ADCSRA  |= (1 << ADSC);                   // start a conversion
-		while (ADCSRA &  (1 << ADSC));            // wait while busy
-		sum += ADCH;                              // totalize ADC result
+		ADCSRA  |= (1 << ADSC);                     // start a conversion
+		while (ADCSRA &  (1 << ADSC));              // wait while busy
+		sum += ADCH;                                // totalize ADC result
 	}
 	#elif defined(__AVR_ATmega_Zero__)
 	PORTD_PIN6CTRL = 0x04;                        // disable digital input buffer on PD6
@@ -417,9 +440,9 @@ void SYS::checkOVERLOAD(void) {                   // Use A6 to sense overload on
 	ADC0_CTRLA |= ADC_ENABLE_bm;                  // turn ADC on
 	uint16_t sum = 0;
 	for (int i = 0 ; i < 250 ; i++) {             // totalize 250 8-bit readings
-		ADC0_COMMAND |= ADC_STCONV_bm;            // start a conversion
-		while (ADC0_COMMAND & ADC_STCONV_bm);     // wait while busy
-		sum += ADC0_RESL;                         // totalize ADC result
+		ADC0_COMMAND |= ADC_STCONV_bm;              // start a conversion
+		while (ADC0_COMMAND & ADC_STCONV_bm);       // wait while busy
+		sum += ADC0_RESL;                           // totalize ADC result
 	}
 	#elif defined(__AVR_DA__)
 	PORTD.PIN6CTRL |= PORT_ISC_INPUT_DISABLE_gc;  // disable digital input buffer for PD6
@@ -429,17 +452,17 @@ void SYS::checkOVERLOAD(void) {                   // Use A6 to sense overload on
 	VREF.ADC0REF = VREF_REFSEL_VDD_gc;            // VDD as reference
 	uint16_t sum = 0;
 	for (int i = 0 ; i < 63 ; i++) {              // totalize 63 10-bit readings
-		ADC0.CTRLA = ADC_ENABLE_bm                /* ADC Enable: enabled */
-		| ADC_RESSEL_10BIT_gc;                    /* 10-bit mode */
-		ADC0.COMMAND = ADC_STCONV_bm;             // start a conversion
-		while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)); // wait while busy
-		sum += ADC0_RES;                          // totalize ADC result
+		ADC0.CTRLA = ADC_ENABLE_bm                   /* ADC Enable: enabled */
+		| ADC_RESSEL_10BIT_gc;                       /* 10-bit mode */
+		ADC0.COMMAND = ADC_STCONV_bm;               // start a conversion
+		while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));   // wait while busy
+		sum += ADC0_RES;                            // totalize ADC result
 	}
 	# endif
-	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
+	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Mega__) || defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
 	if ((sum / 250) <= 230) {                     // if voltage on bridged port outputs <= 4.5V
-		while (1) {                               // OVERLOAD (fix circuit then press Reset)
-			clearPOWER();                         // turn off target power then flash LED at 4Hz
+		while (1) {                                 // OVERLOAD (fix circuit then press Reset)
+			clearPOWER();                             // turn off target power then flash LED at 4Hz
 			setLED();
 			_delay_ms(50);
 			clearLED();
@@ -450,9 +473,9 @@ void SYS::checkOVERLOAD(void) {                   // Use A6 to sense overload on
 	#endif
 }
 
-uint8_t SYS::checkHVMODE() {                      // Check HV Programming Mode Switch
+uint8_t SYS::checkHVMODE() {                    // Check HV Programming Mode Switch
 	#if defined(USE_HV_PROGRAMMING)
-	#if defined(__AVR_ATmega328P__)               // Arduino Nano
+	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Mega__)
 	ADCSRA =  (1 << ADEN);                        // turn ADC on
 	ADCSRA |= (1 << ADPS0) | (1 << ADPS2);        // prescaler of 32
 	ADMUX = (1 << REFS0) | (1 << ADLAR) | (7 & 0x07); // use AVcc reference, 8-bit result, select A7

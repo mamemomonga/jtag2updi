@@ -273,9 +273,13 @@
 #elif defined (__AVR_ATmega_Mega__)
 // 2560 and that family, like the ones used on the Arduino Mega
 
-  #	ifndef HOST_USART
-  #		define HOST_USART 0
-  #	endif
+# ifndef HVLED_PORT
+  #   define HVLED_PORT K
+  # endif
+
+  # ifndef HVLED_PIN
+  #   define HVLED_PIN 0
+  # endif
 
   #	ifndef UPDI_PORT
   #		define UPDI_PORT D
@@ -293,6 +297,21 @@
   #		define LED_PIN 7
   #	endif
 
+  #  ifndef HOST_USART
+  #   define HOST_USART 0
+  # endif
+
+  # ifndef HOST_TX_PORT
+  #   define HOST_TX_PORT E
+  # endif
+
+  # ifndef HOST_TX_PIN
+  #   define HOST_TX_PIN 1
+  # endif
+
+  # ifndef HOST_RX_PIN
+  #   define HOST_RX_PIN 0
+  # endif
 
 #elif defined (__AVR_ATmega_Zero__ ) || defined( __AVR_DA__)
 // 4808, 4809. and the rest of the megaAVR 0-series
