@@ -16,6 +16,11 @@ add ATtiny1606
 	$ arduino-cli board listall | grep megaTinyCore
 	$ arduino-cli board details megaTinyCore:megaavr:atxy6
 
+### Install
+
+	$ vim make
+	$ make
+
 # Readme(Dlloydev)
 
 ## HV UPDI Programmers
