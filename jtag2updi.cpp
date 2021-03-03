@@ -60,13 +60,16 @@ namespace {
     while (1) {
       // Receive command
       #ifndef DISABLE_HOST_TIMEOUT
+        SYS::setStandbyLED();
         while(!(JTAG2::receive()||(SYS::checkTimeouts() & WAIT_FOR_HOST)));
         if (!(SYS::checkTimeouts() & WAIT_FOR_HOST)) {
           HostErrorCount=0;
           SYS::clearTimeouts(); //clear the timeouts, because WAIT_FOR_TARGET may be set here because of how this is implemented...
       #else
+        SYS::setStandbyLED();
         while(!(JTAG2::receive()));
       #endif
+        SYS::clearStandbyLED();
       // Process command
         #if defined(DEBUG_ON)
           DBG::debug('c',JTAG2::packet.body[0]);

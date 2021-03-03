@@ -82,6 +82,9 @@
   # define cps PIN1_bm // charge pump shutdown, PB1
   #endif
 
+  // Standby LED(PB5)
+  # define LED_STANDBY_bm PIN5_bm
+
   //USARTDEBUG not practical here because only one UART.
   //#define USE_SPIDEBUG
 
@@ -141,6 +144,7 @@
   # define cp2 PIN2_bm // charge pump clock 2, PC2
   # define cps PIN3_bm // charge pump shutdown, PC3
   #endif
+
 
 #endif
 
@@ -525,6 +529,8 @@ namespace SYS {
   void clearVerLED(void);
   void setHVLED(void);
   void clearHVLED(void);
+  void setStandbyLED(void);
+  void clearStandbyLED(void);
   void pulseHV(void);
   void updiTriState(void);
   void updiHigh(void);

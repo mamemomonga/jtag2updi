@@ -125,6 +125,7 @@ void SYS::init(void) {
 	PORTA.DIRSET = cp1 | cp2; // set charge pump clock1 and clock2 as output
 	PORTB.DIRSET = cps;       // set charge pump shutdown pin as output
 	PORTB.OUTSET = cps;       // enable charge pump shutdown
+	PORTB.DIRSET = LED_STANDBY_bm; // LED Standby
 	#endif
 	
 	#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
@@ -227,6 +228,14 @@ void SYS::clearHVLED(void){
 	PORT(HVLED_PORT) &= ~(1 << HVLED_PIN);
 	#endif
 }
+void SYS::setStandbyLED(void){
+	PORTB.OUTSET = LED_STANDBY_bm;
+}
+
+void SYS::clearStandbyLED(void){
+	PORTB.OUTCLR = LED_STANDBY_bm;
+}
+
 
 void SYS::pulseHV(void) {
 	#if defined(USE_HV_PROGRAMMING)
