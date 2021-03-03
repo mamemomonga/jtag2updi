@@ -5,6 +5,17 @@ for ATtiny1606 only
 * Makefile for arduino-cli
 * Standby LED(PB5)
 
+### Setup [megaTinyCore](https://github.com/SpenceKonde/megaTinyCore) for [arduino-cli](https://github.com/arduino/arduino-cli)
+
+add ATtiny1606
+
+	$ arduino-cli config add  board_manager.additional_urls http://drazzy.com/package_drazzy.com_index.json
+	$ arduino-cli core update-index
+	$ arduino-cli core search megaTinyCore
+	$ arduino-cli core install megaTinyCore:megaavr
+	$ arduino-cli board listall | grep megaTinyCore
+	$ arduino-cli board details megaTinyCore:megaavr:atxy6
+
 # Readme(Dlloydev)
 
 ## HV UPDI Programmers
