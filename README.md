@@ -1,4 +1,13 @@
-# HV UPDI Programmers
+## Added some features
+
+for ATtiny1606 only
+
+* Makefile for arduino-cli
+* Standby LED(PB5)
+
+# Readme(Dlloydev)
+
+## HV UPDI Programmers
 
 This fork of the repo has been modified to provide HV programming capability to various MCU's as described below. This capability can be disabled if using or [Making a UPDI programmer](https://github.com/SpenceKonde/megaTinyCore/blob/master/MakeUPDIProgrammer.md). For both types of programmers, all unused pins will have their pullups enabled.
 
