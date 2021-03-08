@@ -85,6 +85,12 @@
   // Standby LED(PB5)
   # define LED_STANDBY_bm PIN5_bm
 
+  // Mode Select Button(PB4)
+  # define BTN_MODE_SELECT_bm PIN4_bm
+  # define MODE_SELECT_UPDI 0
+  # define MODE_SELECT_HV   1 
+  # define MODE_SELECT_PCHV 2
+
   //USARTDEBUG not practical here because only one UART.
   //#define USE_SPIDEBUG
 
@@ -529,8 +535,6 @@ namespace SYS {
   void clearVerLED(void);
   void setHVLED(void);
   void clearHVLED(void);
-  void setStandbyLED(void);
-  void clearStandbyLED(void);
   void pulseHV(void);
   void updiTriState(void);
   void updiHigh(void);
@@ -542,6 +546,9 @@ namespace SYS {
   void cyclePOWER(void);
   void checkOVERLOAD(void);
   uint8_t checkHVMODE();
+  void SelectModeInit();
+  void SelectModeStart();
+  void SelectModeEnd();
 }
 
 #endif /* SYS_H_ */

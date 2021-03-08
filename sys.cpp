@@ -19,7 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 
-
+static uint8_t   CurrentMode = 0;
+static uint16_t  CurrentModeIdle = 0;
 
 void SYS::init(void) {
 	#ifdef DEBUG_ON
@@ -125,8 +126,11 @@ void SYS::init(void) {
 	PORTA.DIRSET = cp1 | cp2; // set charge pump clock1 and clock2 as output
 	PORTB.DIRSET = cps;       // set charge pump shutdown pin as output
 	PORTB.OUTSET = cps;       // enable charge pump shutdown
-	PORTB.DIRSET = LED_STANDBY_bm; // LED Standby
+
+	CurrentMode = 0;
+
 	#endif
+	PORTB.DIRSET = LED_STANDBY_bm; // LED Standby
 	
 	#elif defined(__AVR_ATmega_Zero__) || defined(__AVR_DA__)
 	// all programming (28 pins or more)
@@ -228,14 +232,6 @@ void SYS::clearHVLED(void){
 	PORT(HVLED_PORT) &= ~(1 << HVLED_PIN);
 	#endif
 }
-void SYS::setStandbyLED(void){
-	PORTB.OUTSET = LED_STANDBY_bm;
-}
-
-void SYS::clearStandbyLED(void){
-	PORTB.OUTCLR = LED_STANDBY_bm;
-}
-
 
 void SYS::pulseHV(void) {
 	#if defined(USE_HV_PROGRAMMING)
@@ -484,46 +480,144 @@ void SYS::checkOVERLOAD(void) {                 // Sense overload on target powe
 
 uint8_t SYS::checkHVMODE() {                    // Check HV Programming Mode Switch
 	#if defined(USE_HV_PROGRAMMING)
-	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Mega__)
-	ADCSRA =  (1 << ADEN);                        // turn ADC on
-	ADCSRA |= (1 << ADPS0) | (1 << ADPS2);        // prescaler of 32
-	ADMUX = (1 << REFS0) | (1 << ADLAR) | (7 & 0x07); // use AVcc reference, 8-bit result, select A7
-	ADCSRA  |= (1 << ADSC);                       // start a conversion
-	while (ADCSRA &  (1 << ADSC));                // wait while busy
-	return ADCH;                                  // return HV mode jumper setting
-	#elif defined(__AVR_ATtiny_Zero_One__)
-	PORTA_PIN1CTRL = 0x04;                        // disable digital input buffer for PA1
-	ADC0_CTRLA = ADC_RESSEL_8BIT_gc;              // 8-bit resolution
-	ADC0_CTRLC = 0x54;                            // reduced capacitance, Vdd ref, prescaler of 32
-	ADC0_MUXPOS = 0x01;                           // select AIN1
-	ADC0_CTRLA |= ADC_ENABLE_bm;                  // turn ADC on
-	ADC0_COMMAND |= ADC_STCONV_bm;                // start a conversion
-	while (ADC0_COMMAND & ADC_STCONV_bm);         // wait while busy
-	return ADC0_RESL;                             // return HV mode jumper setting
-	#elif defined(__AVR_ATmega_Zero__)
-	PORTD_PIN7CTRL = 0x04;                        // disable digital input buffer for PD7
-	ADC0_CTRLA = ADC_RESSEL_8BIT_gc;              // 8-bit resolution
-	ADC0_CTRLC = 0x54;                            // reduced capacitance, Vdd ref, prescaler of 32
-	ADC0_MUXPOS = 0x07;                           // select AIN7
-	ADC0_CTRLA |= ADC_ENABLE_bm;                  // turn ADC on
-	ADC0_COMMAND |= ADC_STCONV_bm;                // start a conversion
-	while (ADC0_COMMAND & ADC_STCONV_bm);         // wait while busy
-	return ADC0_RESL;                             // return HV mode jumper setting
-	#elif defined(__AVR_DA__)
-	PORTD.PIN7CTRL |= PORT_ISC_INPUT_DISABLE_gc;  // disable digital input buffer for PD7
-	PORTD.PIN7CTRL &= ~PORT_PULLUPEN_bm;          // disable pull-up resistor for PD7
-	ADC0.MUXPOS = ADC_MUXPOS_AIN7_gc;             // Select ADC channel AIN7 (PD7)
-	ADC0.CTRLC = ADC_PRESC_DIV32_gc;              // CLK_PER divided by 32
-	VREF.ADC0REF = VREF_REFSEL_VDD_gc;            // VDD as reference
-	ADC0.CTRLA = ADC_ENABLE_bm                     /* ADC Enable: enabled */
-	| ADC_RESSEL_10BIT_gc;                         /* 10-bit mode */
-	ADC0.COMMAND = ADC_STCONV_bm;                 // start a conversion
-	while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));     // wait while busy
-	return ADC0.RES >> 2;                         // return HV mode jumper setting
-	#else
-	return 0;
-	# endif
-	#else
-	return 0;
+
+	switch(CurrentMode) {
+		case MODE_SELECT_HV:
+			return 110;
+			break;
+		case MODE_SELECT_PCHV:
+			return 210;
+			break;
+		default:
+			return 0;
+	}
+
+//	#if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega_Mega__)
+//	ADCSRA =  (1 << ADEN);                        // turn ADC on
+//	ADCSRA |= (1 << ADPS0) | (1 << ADPS2);        // prescaler of 32
+//	ADMUX = (1 << REFS0) | (1 << ADLAR) | (7 & 0x07); // use AVcc reference, 8-bit result, select A7
+//	ADCSRA  |= (1 << ADSC);                       // start a conversion
+//	while (ADCSRA &  (1 << ADSC));                // wait while busy
+//	return ADCH;                                  // return HV mode jumper setting
+//	#elif defined(__AVR_ATtiny_Zero_One__)
+//	PORTA_PIN1CTRL = 0x04;                        // disable digital input buffer for PA1
+//	ADC0_CTRLA = ADC_RESSEL_8BIT_gc;              // 8-bit resolution
+//	ADC0_CTRLC = 0x54;                            // reduced capacitance, Vdd ref, prescaler of 32
+//	ADC0_MUXPOS = 0x01;                           // select AIN1
+//	ADC0_CTRLA |= ADC_ENABLE_bm;                  // turn ADC on
+//	ADC0_COMMAND |= ADC_STCONV_bm;                // start a conversion
+//	while (ADC0_COMMAND & ADC_STCONV_bm);         // wait while busy
+//	return ADC0_RESL;                             // return HV mode jumper setting
+//
+//	#elif defined(__AVR_ATmega_Zero__)
+//	PORTD_PIN7CTRL = 0x04;                        // disable digital input buffer for PD7
+//	ADC0_CTRLA = ADC_RESSEL_8BIT_gc;              // 8-bit resolution
+//	ADC0_CTRLC = 0x54;                            // reduced capacitance, Vdd ref, prescaler of 32
+//	ADC0_MUXPOS = 0x07;                           // select AIN7
+//	ADC0_CTRLA |= ADC_ENABLE_bm;                  // turn ADC on
+//	ADC0_COMMAND |= ADC_STCONV_bm;                // start a conversion
+//	while (ADC0_COMMAND & ADC_STCONV_bm);         // wait while busy
+//	return ADC0_RESL;                             // return HV mode jumper setting
+//	#elif defined(__AVR_DA__)
+//	PORTD.PIN7CTRL |= PORT_ISC_INPUT_DISABLE_gc;  // disable digital input buffer for PD7
+//	PORTD.PIN7CTRL &= ~PORT_PULLUPEN_bm;          // disable pull-up resistor for PD7
+//	ADC0.MUXPOS = ADC_MUXPOS_AIN7_gc;             // Select ADC channel AIN7 (PD7)
+//	ADC0.CTRLC = ADC_PRESC_DIV32_gc;              // CLK_PER divided by 32
+//	VREF.ADC0REF = VREF_REFSEL_VDD_gc;            // VDD as reference
+//	ADC0.CTRLA = ADC_ENABLE_bm                     /* ADC Enable: enabled */
+//	| ADC_RESSEL_10BIT_gc;                         /* 10-bit mode */
+//	ADC0.COMMAND = ADC_STCONV_bm;                 // start a conversion
+//	while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));     // wait while busy
+//	return ADC0.RES >> 2;                         // return HV mode jumper setting
+//	#else
+//	return 0;
+//	# endif
+//	#else
+//	return 0;
 	#endif
+}
+
+void SelectModeSwitchLED() {
+	switch (CurrentMode) {
+		case MODE_SELECT_UPDI:
+			SYS::clearLED();
+			SYS::clearHVLED();
+			break;
+		case MODE_SELECT_HV:
+			SYS::clearLED();
+			SYS::setHVLED();
+			break;
+		case MODE_SELECT_PCHV:
+			SYS::setLED();
+			SYS::setHVLED();
+			break;
+		default:
+			SYS::clearLED();
+			SYS::clearHVLED();
+			break;
+	}
+}
+
+void SYS::SelectModeInit() {
+//	RTC.CLKSEL = RTC_CLKSEL_INT32K_gc;
+//	while (RTC.STATUS > 0);
+//	RTC.PER = 1000;
+//	RTC.INTCTRL |= RTC_OVF_bm;
+//		RTC.CTRLA = RTC_PRESCALER_DIV32_gc    // 32768 / 32 = 1024 (sec) ~ 1 ms
+//	 | RTC_RTCEN_bm                        // Enable: enabled 
+//	 | RTC_RUNSTDBY_bm;                    // Run In Standby: enabled 
+//	sei();
+}
+
+// ISR(RTC_CNT_vect) {
+// 	RTC.INTFLAGS = RTC_OVF_bm;
+// 
+// 	// PORTB.OUTSET = LED_STANDBY_bm;
+// 	// _delay_ms(100);
+// 	// PORTB.OUTCLR = LED_STANDBY_bm;
+// 	// _delay_ms(100);
+// 
+// 	CurrentModeIdle++;
+// }
+
+void SYS::SelectModeStart() {
+	// while(1) {
+	// 	if( CurrentModeIdle > 1) break;
+	// 	_delay_ms(100);
+	// }
+
+	PORTB.OUTSET = LED_STANDBY_bm;
+
+	// Mode Select Button(PB4) Enable
+	PORTB.DIRCLR = PIN4_bm;
+	PORTB.PIN4CTRL |= PORT_PULLUPEN_bm | PORT_ISC_FALLING_gc;
+
+	SelectModeSwitchLED();
+	sei();
+}
+
+void SYS::SelectModeEnd() {
+	PORTB.OUTCLR = LED_STANDBY_bm;
+
+	// Mode Select Button(PB4) Disable
+	PORTB.PIN4CTRL |= PORT_PULLUPEN_bm;
+
+	SYS::clearLED();
+	SYS::clearHVLED();
+
+	CurrentModeIdle = 0;
+}
+
+ISR(PORTB_PORT_vect) {
+	if(PORTB.INTFLAGS & PIN4_bm) {
+
+		CurrentMode++;
+		if(CurrentMode > 2) CurrentMode = 0;
+		SelectModeSwitchLED();
+
+		while(PORTB.IN & PIN4_bm);
+		_delay_ms(250);
+		PORTB.INTFLAGS &= PIN4_bm;
+
+	}
 }

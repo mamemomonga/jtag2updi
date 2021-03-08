@@ -1,6 +1,17 @@
-## Added some features
+## Added some features for ATtiny1606
 
-for ATtiny1606 only
+	ATtiny 1606
+	                      _____
+	              VDD   1|*    |20  GND
+	       CP1 PA4  0~  2|     |19  16~ PA3 CPP
+	       CP2 PA5  1~  3|     |18  15  PA2 PowerSW
+	     HVLED PA6  2   4|     |17  14  PA1 MODE
+	       LED PA7  3   5|     |16  17  PA0 (AIN0/nRESET/UPDI)
+	StandbyLED PB5  4   6|     |15  13  PC3
+	ModeSelect PB4  5   7|     |14  12  PC2
+	        RX PB3  6   8|     |13  11~ PC1
+	        TX PB2  7~  9|     |12  10~ PC0
+	       CPS PB1  8~ 10|_____|11   9~ PB0 UPDI_Target
 
 * Makefile for arduino-cli
 * Standby LED(PB5)

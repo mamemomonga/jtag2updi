@@ -42,6 +42,8 @@ namespace {
     JICE_io::init();
     UPDI_io::init();
 
+    SYS::SelectModeInit();
+
   }
 
   inline void loop() {
@@ -60,16 +62,18 @@ namespace {
     while (1) {
       // Receive command
       #ifndef DISABLE_HOST_TIMEOUT
-        SYS::setStandbyLED();
+        SYS::SelectModeStart();
         while(!(JTAG2::receive()||(SYS::checkTimeouts() & WAIT_FOR_HOST)));
         if (!(SYS::checkTimeouts() & WAIT_FOR_HOST)) {
           HostErrorCount=0;
           SYS::clearTimeouts(); //clear the timeouts, because WAIT_FOR_TARGET may be set here because of how this is implemented...
+          SYS::SelectModeEnd();
       #else
-        SYS::setStandbyLED();
+        SYS::SelectModeStart();
         while(!(JTAG2::receive()));
+        SYS::SelectModeEnd();
       #endif
-        SYS::clearStandbyLED();
+
       // Process command
         #if defined(DEBUG_ON)
           DBG::debug('c',JTAG2::packet.body[0]);
