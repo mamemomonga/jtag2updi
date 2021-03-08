@@ -1,3 +1,5 @@
+# HV UPDI Programmers
+
 ## Added some features for ATtiny1606
 
 	ATtiny 1606
@@ -5,7 +7,7 @@
 	              VDD   1|*    |20  GND
 	       CP1 PA4  0~  2|     |19  16~ PA3 CPP
 	       CP2 PA5  1~  3|     |18  15  PA2 PowerSW
-	     HVLED PA6  2   4|     |17  14  PA1 MODE
+	     HVLED PA6  2   4|     |17  14  PA1 Overload(MODE)
 	       LED PA7  3   5|     |16  17  PA0 (AIN0/nRESET/UPDI)
 	StandbyLED PB5  4   6|     |15  13  PC3
 	ModeSelect PB4  5   7|     |14  12  PC2
@@ -15,6 +17,7 @@
 
 * Makefile for arduino-cli
 * Standby LED(PB5)
+* Mode Select Switch
 
 ### Setup [megaTinyCore](https://github.com/SpenceKonde/megaTinyCore) for [arduino-cli](https://github.com/arduino/arduino-cli)
 
@@ -33,8 +36,6 @@ add ATtiny1606
 	$ make
 
 # Readme(Dlloydev)
-
-## HV UPDI Programmers
 
 This fork of the repo has been modified to provide HV programming capability to various MCU's as described below. This capability can be disabled if using or [Making a UPDI programmer](https://github.com/SpenceKonde/megaTinyCore/blob/master/MakeUPDIProgrammer.md). For both types of programmers, all unused pins will have their pullups enabled.
 
